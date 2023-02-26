@@ -1,7 +1,16 @@
+import React from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 
 const UsContactModal = ({ modalB, setModalB }) => {
+  const [useContact, setUsContact] = React.useState([]);
+  //Get All Data
+  React.useEffect(() => {
+    fetch("https://contact.mediusware.com/api/contacts/")
+      .then((res) => res.json())
+      .then((data) => setUsContact(data));
+  }, []);
+
   return (
     <Modal
       show={modalB}
@@ -11,14 +20,24 @@ const UsContactModal = ({ modalB, setModalB }) => {
       centered
     >
       <Modal.Header closeButton>
-        <Modal.Title>Modal heading</Modal.Title>
+        <Modal.Title>Us Contacts</Modal.Title>
       </Modal.Header>
-      <Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
+      <Modal.Body>
+        {useContact?.results?.map(
+          (data, index) =>
+            data?.phone?.startsWith("+1") && (
+              <div key={index}>
+                <h6>
+                  Phone Number: <span>{data?.phone}</span>
+                </h6>
+              </div>
+            )
+        )}
+      </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={() => setModalB(false)}>
           Close
         </Button>
-        <Button variant="primary">Save Changes</Button>
       </Modal.Footer>
     </Modal>
   );

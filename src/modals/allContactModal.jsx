@@ -3,19 +3,32 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 
 const AllContactModal = ({ modalA, setModalA }) => {
-  const [show, setShow] = React.useState("all");
+  const [show, setShow] = React.useState("allContact");
   const [allCountries, setAllCountries] = React.useState([]);
 
   const handleClick = (val) => {
     setShow(val);
   };
 
+  //Get All Data
   React.useEffect(() => {
     fetch("https://contact.mediusware.com/api/contacts/")
       .then((res) => res.json())
       .then((data) => setAllCountries(data));
   }, []);
-  console.log(allCountries?.results?.map((data) => data));
+
+  const [searchTerm, setSearchTerm] = React.useState("");
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const filteredNumbers = allCountries?.results?.filter((number) => {
+    const phone = number.phone.toLowerCase();
+    const term = searchTerm.toLowerCase();
+    return phone.includes(term);
+  });
+
   return (
     <Modal
       show={modalA}
@@ -28,41 +41,63 @@ const AllContactModal = ({ modalA, setModalA }) => {
         <Modal.Title>All Contacts</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        <form className="d-flex gap-3 pb-3 ">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search Number"
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
+        </form>
+
         <ul className="nav nav-pills mb-3" id="pills-tab" role="tablist">
           <li className="nav-item">
             <button
-              className={`nav-link ${show === "all" && "active"}`}
+              className={`nav-link ${show === "allContact" && "active"} `}
               type="button"
-              onClick={() => handleClick("all")}
+              onClick={() => handleClick("allContact")}
             >
-              Modal A
+              All Contact
             </button>
           </li>
           <li className="nav-item">
             <button
-              className={`nav-link ${show === "active" && "active"}`}
+              className={`nav-link ${show === "usContact" && "active"}`}
               type="button"
-              onClick={() => handleClick("active")}
+              onClick={() => handleClick("usContact")}
+              // style={{ backgroundColor: "#ff7f50" }}
             >
-              Modal B
-            </button>
-          </li>
-          <li className="nav-item">
-            <button
-              className={`nav-link ${show === "completed" && "active"}`}
-              type="button"
-              onClick={() => handleClick("completed")}
-            >
-              Modal C
+              Us Contact
             </button>
           </li>
         </ul>
+        {allCountries.results === undefined
+          ? "Loading..."
+          : (show === "allContact" &&
+              filteredNumbers?.map((data) => (
+                <div key={data?.id}>
+                  <h6>
+                    Phone Number: <span>{data?.phone}</span>
+                  </h6>
+                </div>
+              ))) ||
+            (show === "usContact" &&
+              filteredNumbers?.map(
+                (data, index) =>
+                  data?.phone?.startsWith("+1") && (
+                    <div key={index}>
+                      <h6>
+                        Phone Number: <span>{data?.phone}</span>
+                      </h6>
+                    </div>
+                  )
+              ))}
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={() => setModalA(false)}>
           Close
         </Button>
-        <Button variant="primary">Save Changes</Button>
       </Modal.Footer>
     </Modal>
   );
